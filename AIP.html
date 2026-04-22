@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EnterpriseHR | Advanced Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #f3f4f6;
+            --bg-sidebar: #111827;
+            --bg-card: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0; font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body); color: var(--text-main);
+            height: 100vh; overflow: hidden;
+        }
+
+        /* --- LOGIN VIEW --- */
+        #login-view { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #e5e7eb; }
+        .login-box { background-color: var(--bg-card); padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .login-box h2 { margin-top: 0; }
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 6px; }
+        .input-group input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; }
+        button.btn-login { width: 100%; padding: 10px; background-color: var(--accent); color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; }
+        #login-error { color: var(--danger); font-size: 0.875rem; margin-top: 12px; display: none; }
+
+        /* --- DASHBOARD VIEW --- */
+        #dashboard-view { display: none; height: 100vh; width: 100vw; }
+        .app-layout { display: flex; height: 100%; }
+
+        /* Sidebar */
+        .sidebar { width: 260px; background-color: var(--bg-sidebar); color: white; display: flex; flex-direction: column; }
+        .sidebar-brand { padding: 24px; font-size: 1.25rem; font-weight: 600; border-bottom: 1px solid #1f2937; }
+        .sidebar-nav { padding: 20px 12px; }
+        .nav-item { padding: 10px 16px; color: #9ca3af; border-radius: 6px; font-size: 0.875rem; font-weight: 500; margin-bottom: 4px; display: flex; align-items: center; cursor: pointer; }
+        .nav-item.active { background-color: rgba(16, 185, 129, 0.1); color: var(--accent); }
+
+        /* Main Content */
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .top-header { height: 64px; background-color: var(--bg-card); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 0 32px; }
+        .page-content { padding: 32px; overflow-y: auto; flex-grow: 1; }
+        
+        /* AIP FEATURE: Analytics Widgets */
+        .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }
+        .stat-card { background-color: var(--bg-card); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .stat-title { font-size: 0.875rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; }
+        .stat-value { font-size: 2rem; font-weight: 600; color: var(--text-main); margin-top: 8px; }
+
+        /* Action Bar */
+        .action-bar { display: flex; justify-content: space-between; background-color: var(--bg-card); padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 24px; }
+        .search-input { width: 300px; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; }
+        .button-group { display: flex; gap: 12px; }
+        
+        button.btn-add { background-color: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        button.btn-export { background-color: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+
+        /* Add Form */
+        #add-form-panel { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 24px; margin-bottom: 24px; display: none; }
+        .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
+        .form-row > div { flex: 1; }
+
+        /* Data Table */
+        .data-card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #f9fafb; padding: 12px 24px; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border-color); }
+        td { padding: 16px 24px; border-bottom: 1px solid var(--border-color); font-size: 0.875rem; }
+        .avatar { width: 32px; height: 32px; border-radius: 50%; vertical-align: middle; margin-right: 12px; border: 1px solid var(--border-color); }
+        
+        .badge { padding: 4px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 500; }
+        .badge.engineer { background-color: #e0e7ff; color: #4338ca; }
+        .badge.manager { background-color: #dcfce7; color: #15803d; }
+        .badge.analyst { background-color: #fef3c7; color: #b45309; }
+
+        .btn-delete { background: none; border: none; color: var(--danger); cursor: pointer; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+    <div id="login-view">
+        <div class="login-box">
+            <h2>EnterpriseHR</h2>
+            <p>Sign in to access the employee directory.</p>
+            <div class="input-group">
+                <label>Corporate ID</label>
+                <input type="text" id="username" placeholder="admin">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="••••••••">
+            </div>
+            <button id="login-btn" class="btn-login">Sign In</button>
+            <div id="login-error">Invalid credentials.</div>
+        </div>
+    </div>
+
+    <div id="dashboard-view">
+        <div class="app-layout">
+            <aside class="sidebar">
+                <div class="sidebar-brand">EnterpriseHR</div>
+                <nav class="sidebar-nav">
+                    <div class="nav-item active">Employee Directory</div>
+                </nav>
+            </aside>
+
+            <main class="main-content">
+                <header class="top-header">
+                    <div style="font-weight: 500;">Logged in as: Admin</div>
+                    <button id="logout-btn" style="background:none; border:1px solid #e5e7eb; padding:6px 12px; border-radius:6px; cursor:pointer;">Sign Out</button>
+                </header>
+
+                <div class="page-content">
+                    <h1 style="margin-top:0;">Directory Overview</h1>
+
+                    <div class="analytics-grid">
+                        <div class="stat-card">
+                            <div class="stat-title">Total Employees</div>
+                            <div class="stat-value" id="stat-total">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-title">Engineering Staff</div>
+                            <div class="stat-value" id="stat-engineers">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-title">Active Departments</div>
+                            <div class="stat-value" id="stat-depts">0</div>
+                        </div>
+                    </div>
+
+                    <div class="action-bar">
+                        <input type="text" id="search-bar" class="search-input" placeholder="Search employees...">
+                        <div class="button-group">
+                            <button class="btn-export" id="export-btn">📥 Export to CSV</button>
+                            <button class="btn-add" id="toggle-add-btn">+ New Employee</button>
+                        </div>
+                    </div>
+
+                    <div id="add-form-panel">
+                        <h3 style="margin-top:0;">Add New Record</h3>
+                        <div class="form-row">
+                            <div class="input-group"><label>Full Name</label><input type="text" id="new-name"></div>
+                            <div class="input-group"><label>Department</label><input type="text" id="new-dept"></div>
+                            <div class="input-group">
+                                <label>Role</label>
+                                <select id="new-role" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px;">
+                                    <option value="Engineer">Engineer</option>
+                                    <option value="Analyst">Analyst</option>
+                                    <option value="Manager">Manager</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button id="save-btn" class="btn-add">Save Record</button>
+                    </div>
+
+                    <div class="data-card">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>ID</th>
+                                    <th>Department</th>
+                                    <th>Role</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employee-data"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const loginView = document.getElementById('login-view');
+        const dashboardView = document.getElementById('dashboard-view');
+        const tableBody = document.getElementById('employee-data');
+        const searchBar = document.getElementById('search-bar');
+        
+        let employeeDB = [
+            { id: "EMP-101", name: "Sneha Jain", dept: "Engineering", role: "Engineer" },
+            { id: "EMP-102", name: "Mithun Thakur", dept: "Cloud Architecture", role: "Manager" },
+            { id: "EMP-103", name: "taniya kapooor", dept: "Security", role: "Analyst" }
+        ];
+
+        if (sessionStorage.getItem('emp_db')) {
+            employeeDB = JSON.parse(sessionStorage.getItem('emp_db'));
+        }
+
+        // LOGIN
+        document.getElementById('login-btn').addEventListener('click', () => {
+            if (document.getElementById('username').value === 'admin' && document.getElementById('password').value === 'password123') {
+                sessionStorage.setItem('auth_token', 'JWT_ACTIVE');
+                loginView.style.display = 'none'; dashboardView.style.display = 'block';
+                renderTable(employeeDB);
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            sessionStorage.removeItem('auth_token');
+            dashboardView.style.display = 'none'; loginView.style.display = 'flex';
+        });
+
+        // RENDER & UPDATE ANALYTICS
+        function updateAnalytics(dataArray) {
+            document.getElementById('stat-total').innerText = dataArray.length;
+            
+            const engineers = dataArray.filter(emp => emp.role === 'Engineer').length;
+            document.getElementById('stat-engineers').innerText = engineers;
+            
+            const uniqueDepts = new Set(dataArray.map(emp => emp.dept)).size;
+            document.getElementById('stat-depts').innerText = uniqueDepts;
+        }
+
+        function renderTable(dataArray) {
+            tableBody.innerHTML = '';
+            updateAnalytics(dataArray);
+
+            dataArray.forEach(emp => {
+                // AIP FEATURE 3: EXTERNAL API INTEGRATION (Avatar Generation)
+                const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.name)}&background=random&color=fff`;
+                
+                let badgeClass = 'badge analyst';
+                if(emp.role === 'Engineer') badgeClass = 'badge engineer';
+                if(emp.role === 'Manager') badgeClass = 'badge manager';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-weight: 500;">
+                        <img src="${avatarUrl}" class="avatar" alt="profile">
+                        ${emp.name}
+                    </td>
+                    <td style="color: #6b7280; font-family: monospace;">${emp.id}</td>
+                    <td>${emp.dept}</td>
+                    <td><span class="${badgeClass}">${emp.role}</span></td>
+                    <td><button class="btn-delete" onclick="deleteEmployee('${emp.id}')">Revoke</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            sessionStorage.setItem('emp_db', JSON.stringify(employeeDB));
+        }
+
+        window.deleteEmployee = function(id) {
+            employeeDB = employeeDB.filter(emp => emp.id !== id);
+            renderTable(employeeDB);
+        };
+
+        // SEARCH
+        searchBar.addEventListener('keyup', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = employeeDB.filter(emp => emp.name.toLowerCase().includes(term) || emp.dept.toLowerCase().includes(term));
+            renderTable(filtered);
+        });
+
+        // ADD
+        document.getElementById('toggle-add-btn').addEventListener('click', () => {
+            const panel = document.getElementById('add-form-panel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        });
+
+        document.getElementById('save-btn').addEventListener('click', () => {
+            const name = document.getElementById('new-name').value;
+            const dept = document.getElementById('new-dept').value;
+            const role = document.getElementById('new-role').value;
+            if (!name || !dept) return alert("Fill all fields");
+
+            employeeDB.push({ id: "EMP-" + Math.floor(Math.random()*900+100), name, dept, role });
+            renderTable(employeeDB);
+            
+            document.getElementById('new-name').value = ''; document.getElementById('new-dept').value = '';
+            document.getElementById('add-form-panel').style.display = 'none';
+        });
+
+        // AIP FEATURE 2: EXPORT TO CSV LOGIC
+        document.getElementById('export-btn').addEventListener('click', () => {
+            let csvContent = "data:text/csv;charset=utf-8,Employee ID,Full Name,Department,Role\n";
+            
+            employeeDB.forEach(emp => {
+                csvContent += `${emp.id},${emp.name},${emp.dept},${emp.role}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "enterprise_employee_report.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    </script>
+</body>
+</html>
